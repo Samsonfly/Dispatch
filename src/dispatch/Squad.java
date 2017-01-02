@@ -29,6 +29,16 @@ public class Squad
         this.members.add(value);
     }    
     
+    public void setLeaderFirstName(String value)
+    {
+        this.leader.setFirstName(value);
+    }
+
+    public void setLeaderLastName(String value)
+    {
+        this.leader.setLastName(value);
+    }
+    
     public ArrayList<Integer> getHistory()
     {
         return this.history;
@@ -44,6 +54,11 @@ public class Squad
         return this.id;
     }    
     
+    public Captain getLeader()
+    {
+        return this.leader;
+    }
+    
     public void addToHistory(ArrayList<Integer> members)
     {
         this.history.addAll(members);
@@ -54,9 +69,8 @@ public class Squad
         this.members.add(value);
     }
         
-    public String toString()
+    public String to_string()
     {
-        return "Squad Leader = " + this.leader.getFirstName() +
-         " " + this.leader.getLastName() + "\n" + "Squad Name = " + this.name + "\n";
+        return this.leader.getFirstName() + " " + this.leader.getLastName();
     }
 }

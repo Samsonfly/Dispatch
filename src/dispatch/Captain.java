@@ -19,4 +19,9 @@ public class Captain extends Person
     {
         super(firstName, lastName);
     }
+    
+    public String to_string()
+    {
+        return this.getFirstName() + " " + this.getLastName();
+    }    
 }

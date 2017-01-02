@@ -1,5 +1,6 @@
 package dispatch;
 import java.util.*;
+
 /**
  * Write a description of class Lieutnant here.
  * 
@@ -11,8 +12,8 @@ public class Lieutnant extends Person
     /**
      * Constructor for objects of class Lieutnant
      */
-    private int id;   
-    private ArrayList<Integer> joinedSquads;    
+    private final int id;   
+    private final ArrayList<Integer> joinedSquads;    
     
     public Lieutnant(String firstName, String lastName, int id, ArrayList<Integer> joinedSquads)
     {
@@ -31,8 +32,12 @@ public class Lieutnant extends Person
         return this.id;
     }
     
-    public String toString()
+    /**
+     *
+     * @return
+     */
+    public String to_string()
     {
-        return this.getFirstName() + " " + this.getLastName() + this.joinedSquads;
+        return this.getFirstName() + " " + this.getLastName();
     }
 }

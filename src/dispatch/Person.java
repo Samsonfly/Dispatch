@@ -24,6 +24,8 @@ public class Person
 
     /**
      * Constructor for objects of class Person
+     * @param firstName
+     * @param lastName
      */
     public Person(String firstName, String lastName)
     {
@@ -41,4 +43,14 @@ public class Person
     {
         return this.firstName;
     }          
+    
+    public void setLastName(String value)
+    {
+        this.lastName = value;
+    }
+    
+    public void setFirstName(String value)
+    {
+        this.firstName = value;
+    }
 }

@@ -4,7 +4,8 @@ import java.util.*;
 import java.util.prefs.*;
 import java.io.*;
 import com.google.gson.*;
-import java.text.*;
+import java.net.URL;
+import java.text.SimpleDateFormat;
 
 /**
  * Write a description of class Main here.
@@ -14,13 +15,7 @@ import java.text.*;
  */
 public class Dispatch extends Squad
 {
-    // Preference keys for this package
-    private static final String ROUND_INDEX = "round_index";
-    private static final String CYCLE_INDEX = "cycle_index";
-    private static final File confFile    = new File("C:\\Users\\gbian\\Documents\\Briefcase\\UQAM\\BlueJ\\Dispatcher\\configFiles\\conf.json");
-    private static final File membersFile = new File("C:\\Users\\gbian\\Documents\\Briefcase\\UQAM\\BlueJ\\Dispatcher\\configFiles\\members.json");
-    
-    public void writeStringToJsonFile(String jsonString, File filename)
+    private void writeStringToJsonFile(String jsonString, File filename)
     {
         try 
         {
@@ -33,123 +28,178 @@ public class Dispatch extends Squad
         }        
     }
     
-    public Squad[] loadSquads()
+    private Squad[] loadSquads()
     {
         Gson gson = new Gson();
         Squad[] squads = new Squad[5];
         try
         {
-            com.google.gson.stream.JsonReader reader = gson.newJsonReader(new FileReader(confFile));
+            com.google.gson.stream.JsonReader reader = gson.newJsonReader(new FileReader(CONF_FILE));
             squads = gson.fromJson(reader, Squad[].class);
         }catch(FileNotFoundException ex)
         {}
         return squads;
     }
     
-    public void saveSquads(Squad[] squads)
-    {
-        Gson gson = new Gson();
-        String jsonString = gson.toJson(squads, Squad[].class);
-        //System.out.println(jsonString);
-        writeStringToJsonFile(jsonString, confFile);
-    }
-
-    public Lieutnant[] loadMembers()
+    private Lieutnant[] loadMembers()
     {
         Gson gson = new Gson();
         Lieutnant[] members = new Lieutnant[20];
         try
         {
-            com.google.gson.stream.JsonReader reader = gson.newJsonReader(new FileReader(membersFile));
+            com.google.gson.stream.JsonReader reader = gson.newJsonReader(new FileReader(MEMBERS_FILE));
             members = gson.fromJson(reader, Lieutnant[].class);            
         }catch(FileNotFoundException ex){}
         return members;        
     }        
-
-    public void saveMembers(Lieutnant[] members)
+    
+    public void saveSquads()
     {
         Gson gson = new Gson();
-        String jsonString = gson.toJson(members, Lieutnant[].class);
-        //System.out.println(jsonString);
-        writeStringToJsonFile(jsonString, membersFile);
+        String jsonString = gson.toJson(m_squads, Squad[].class);
+        writeStringToJsonFile(jsonString, CONF_FILE);
+    }
+    
+    public void saveMembers()
+    {
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(m_members, Lieutnant[].class);
+        writeStringToJsonFile(jsonString, MEMBERS_FILE);
     }    
     
-    public Date loadDate()
+    private Date loadDate()
     {
-        File jsonInputFile = new File("C:\\Users\\gbian\\Documents\\Briefcase\\UQAM\\BlueJ\\Dispatcher\\configFiles\\scheduler.json");
         Gson gson = new Gson();
-        Date d = new Date();
+        Date ret = new Date();
         try
         {
-            com.google.gson.stream.JsonReader reader = gson.newJsonReader(new FileReader(jsonInputFile));
-            d = gson.fromJson(reader, Date.class);
+            com.google.gson.stream.JsonReader reader = gson.newJsonReader(new FileReader(DATE_FILE));
+            ret = gson.fromJson(reader, Date.class);
         }catch(FileNotFoundException ex){}
-        return d;
+        return ret;
     }
-        
-    public void addMembersToSquadHistory(Squad squad, ArrayList<Integer> members)
+
+    public void setSquadsAndMembers(ArrayList<String> squadsAndMembers)
+    {
+        String[] str;
+        for (int i=0; i<m_squads.length;++i)
+        {
+            str = squadsAndMembers.get(i).split(" ", 2);
+            m_squads[i].setLeaderFirstName(str[0]);
+            m_squads[i].setLeaderLastName(str[1]);
+        }
+        for (int i=0; i<m_members.length;++i)
+        {
+            str = squadsAndMembers.get(i+5).split(" ", 2);
+            m_members[i].setFirstName(str[0]);
+            m_members[i].setLastName(str[1]);
+        }
+    }    
+
+    private void addMembersToSquadHistory(Squad squad, ArrayList<Integer> members)
     {
         squad.addToHistory(members);        
     }
 
-    public ArrayList<Integer> updateSquadAvailability (Squad[] squads)
+    private ArrayList<Integer> updateSquadAvailability ()
     {
         ArrayList<Integer> availableSquads = new ArrayList();
 
         for (int i=0; i<5; ++i)
         {
-            if (squads[i].getMembers().size() < 4)
+            if (m_squads[i].getMembers().size() < 4)
             {
-                availableSquads.add(squads[i].getID());
+                availableSquads.add(m_squads[i].getID());
             }
         }        
         return availableSquads;
     }
 
-    public void updateSquadHistoryList(Squad[] squads)
+    private void updateSquadsHistoryList()
     {
-        for (int i=0; i<5; ++i)
+        for (int i=0; i<m_squads.length; ++i)
         {
-            addMembersToSquadHistory (squads[i], squads[i].getMembers());
+            addMembersToSquadHistory (m_squads[i], m_squads[i].getMembers());
         }        
     }     
 
-    public void resetSquadsMembersList(Squad[] squads)
+    public void resetSquadsMembersList()
     {
-        for (int i=0; i<5; ++i)
+        for (int i=0; i<m_squads.length; ++i)
         {
-            squads[i].getMembers().clear();
+            m_squads[i].getMembers().clear();
         }        
     }     
-
-    public void resetJoinedSquadList(Lieutnant[] members)
+    
+    public void resetSquadsHistoryList()
     {
-        for (int i=0; i<members.length; ++i)
+        for (int i=0; i<m_squads.length; ++i)
         {
-            members[i].getJoinedSquads().clear();
+            m_squads[i].getHistory().clear();
         }        
     }
 
-    public void removeRangeSquadsHistory(Squad[] squads)
+    public void resetSquadsLeaderName()
     {
-        for (int i=0; i<5; ++i)
+        for (int i=0; i<m_squads.length; ++i)
         {
-            squads[i].getHistory().subList(0, squads[i].getHistory().size()-4).clear();
+            m_squads[i].getLeader().setFirstName("");
+            m_squads[i].getLeader().setLastName("");
+        }        
+    }
+    
+    public void resetMembersName()
+    {
+        for (int i=0; i<m_members.length; ++i)
+        {
+            m_members[i].setFirstName("");
+            m_members[i].setLastName("");
+        }        
+    }
+    
+    public void resetJoinedSquadList()
+    {
+        for (int i=0; i<m_members.length; ++i)
+        {
+            m_members[i].getJoinedSquads().clear();
+        }        
+    }
+   
+    public void resetRoundIndex()
+    {
+        m_prefs.putInt(ROUND_INDEX, 0);
+    }
+    
+    public void removeRangeSquadsHistory()
+    {
+        for (int i=0; i<m_squads.length; ++i)
+        {
+            m_squads[i].getHistory().subList(0,
+                    m_squads[i].getHistory().size()-4).clear();
         }
     }    
     
-    public void removeJoinedSquadsListLastEntries(Lieutnant[] members, int round)
+    public void removeRangeJoinedSquads()
+    {
+        for (int i=0; i<m_members.length; ++i)
+        {
+            m_members[i].getJoinedSquads().subList(0,
+                    m_members[i].getJoinedSquads().size()-1).clear();
+        }
+    }      
+    
+    private void removeJoinedSquadsListLastEntries(Lieutnant[] members)
     {
         for (int i=0; i<members.length; ++i)
         {
-            if (members[i].getJoinedSquads().size() >  round)
+            if (members[i].getJoinedSquads().size() >  m_roundIndex)
             {
                 members[i].getJoinedSquads().remove(members[i].getJoinedSquads().size()-1);
             }            
         }        
     }        
 
-    public Boolean joinASquad (Lieutnant member, Squad[] squads, ArrayList<Integer> availableSquads)
+    private Boolean joinASquad (Lieutnant member, ArrayList<Integer> availableSquads)
     {
         boolean joinedASquad = false;
         Random randomizer = new Random();
@@ -164,108 +214,215 @@ public class Dispatch extends Squad
                 squadIndex = random - 1;
                 if ( member.getJoinedSquads().isEmpty() ||(member.getJoinedSquads().contains(random) == false) )
                 {
-                    squads[squadIndex].addMember(member.getID());
-                    //System.out.println(">> "+squads[squadIndex].getName()+">> "+squads[squadIndex].getMembers());            
+                    m_squads[squadIndex].addMember(member.getID());
                     member.getJoinedSquads().add(random);
                     joinedASquad = true;
                 }
             }
         }
-        else
-        {
-            System.out.println("No available squad !");
-        }
         return joinedASquad;
-    }    
+    }
     
-    public void launchRound(Lieutnant[] members, Squad[] squads, int roundIndex)
-    {
+    public void launchRound()
+    {        
         boolean joinedSquad = false;
         ArrayList<Integer> availableSquads = new ArrayList();
         
-        for (int i=0; i < members.length; ++i)
+        for (int i=0; i < m_members.length; ++i)
         {
             do
             {
                 availableSquads.clear();
-                availableSquads = updateSquadAvailability(squads);                
-                joinedSquad = joinASquad(members[i], squads, availableSquads);
-                if ( joinedSquad == false)
+                availableSquads = updateSquadAvailability();                
+                joinedSquad = joinASquad(m_members[i], availableSquads);
+                if (joinedSquad == false)
                 {
                     i=0;
-                    //System.out.println("Bad luck !");
                     // Bad luck ! Retry round.
-                    resetSquadsMembersList(squads);            
-                    removeJoinedSquadsListLastEntries(members, roundIndex);
+                    resetSquadsMembersList();            
+                    removeJoinedSquadsListLastEntries(m_members);
                 }
             }while(joinedSquad == false);
         }
-        updateSquadHistoryList(squads);
-        resetSquadsMembersList(squads);
+        updateSquadsHistoryList();
+        resetSquadsMembersList();
     }
-
-    public void printResult(Squad[] squads)
+      
+    public boolean isFreshStart()
     {
-        for (int i=0; i<5; ++i)
+        boolean ret = false;
+        
+        for (int i=0; i<m_squads.length; ++i)
         {
-            System.out.println("=> " + squads[i].getName() + "  " + squads[i].getHistory());
+            for (int j=0; j<m_squads[i].getMembers().size(); ++j)
+            {
+                if ((m_squads[i].getLeader().getFirstName().equals("")) ||
+                    (m_squads[i].getLeader().getLastName().equals("")) )
+                {
+                    ret = true;
+                    break;
+                }
+            }
         }
+        
+        if (ret == false)
+        {
+            for (int i=0; i<m_members.length; ++i)
+            {
+                if ((m_members[i].getFirstName().equals("")) ||
+                    (m_members[i].getLastName().equals("")) )
+                {
+                    ret = true;
+                    break;
+                }
+            }            
+        }
+        return ret;
     }
 
-    public Dispatch()
-    {        
-        Preferences prefs = Preferences.userNodeForPackage(Dispatch.class);
-        int roundIndex = prefs.getInt(ROUND_INDEX, -1);
+    public Date getSavedDate()
+    {
+        return m_date;
+    }
+    
+    public int getRoundIndex()
+    {
+        return m_roundIndex;
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public Preferences getPrefs()
+    {
+        return m_prefs;
+    }
+    
+    public void setRoundIndex(int value)
+    {
+        m_roundIndex = value;
+    }
+    
+    private String printSquadMembers(ArrayList<Integer> history)
+    {
+        String ret = "";
         
-        if(roundIndex == -1)
+        for (int i=history.size()-4; i<history.size(); ++i)
         {
-            System.out.println("Round index null");
-            prefs.putInt(ROUND_INDEX, 0);
-            roundIndex=0;
-        }
-        else
-        {
-            System.out.println("=>"+roundIndex);            
+            ret += ("\t\t    --> " + getMemberName(history.get(i)) + "\n");
         }
         
-        // Load squads and members from configuration files
-        Squad[] squads = loadSquads();
-        Lieutnant[] members = loadMembers();
-        System.out.println("\n---History---");
-        printResult(squads);
-        System.out.println("---End---\n");
-        Date today = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-
-        Date d = loadDate();
-        if(sdf.format(d).equals(sdf.format(today)) == false)
-        {        
-            if(roundIndex < 5)
+        return ret;
+    }
+    
+    public String printResult()
+    {
+        String ret = "";
+        
+        for (int i=0; i < m_squads.length; ++i)
+        {
+            ret += "\t\t   *** ["+ m_squads[i].getName() + "] ***\n";
+            ret += "\t\tLeader: " + m_squads[i].getLeader().getFirstName() + " " +
+                    m_squads[i].getLeader().getLastName()+"\n";
+            ret += printSquadMembers(m_squads[i].getHistory())+"\n";
+        }
+        /* // Debug printing
+        for (int i=0; i < m_squads.length; ++i)
+        {
+            ret += m_squads[i].getHistory()+"\n";        
+        }
+        ret += m_members[0].getJoinedSquads();*/
+        return ret;
+    }
+    
+    /**
+     *
+     * @param id
+     * @return
+     */
+    public String getMemberName(int id)
+    {
+        String ret = "";
+        for (int i=0; i < m_members.length; ++i)
+        {
+            if (m_members[i].getID() == id)
             {
-                launchRound(members, squads, roundIndex);
-                System.out.println("\n---Members---");
-                printResult(squads);
-                System.out.println("---End---\n");
-                if(roundIndex == 0)
+                ret = m_members[i].to_string();
+            }
+        }
+        return ret;
+    }
+    
+    public Squad[] getDispatchSquads()
+    {
+        return m_squads;
+    }
+
+    public Lieutnant[] getDispatchMembers()
+    {
+        return m_members;
+    }
+    
+    public void run()
+    {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        Date today = new Date();
+        m_prefs = Preferences.userNodeForPackage(Dispatch.class);
+        
+        if(m_roundIndex == -1)
+        {
+            resetRoundIndex();
+            m_roundIndex = 0;
+        }
+        
+        if(sdf.format(m_date).equals(sdf.format(today)) == false)
+        {
+            if(m_roundIndex < 5)
+            {
+                launchRound();
+                if(m_roundIndex == 0)
                 {
-                    removeRangeSquadsHistory(squads);
+                    removeRangeSquadsHistory();
+                    removeRangeJoinedSquads();
                 }
                 
-                if(roundIndex == 4)
+                if(m_roundIndex == 4)
                 {
-                    System.out.println("Reached max round");
-                    roundIndex=0;
-                    removeRangeSquadsHistory(squads);
-                    resetJoinedSquadList(members);
+                    m_roundIndex = 0;
+                    removeRangeSquadsHistory();
+                    removeRangeJoinedSquads();
                 }
                 else
                 {
-                    roundIndex++;                    
+                    m_roundIndex++;
                 }
-                saveSquads(squads);
-                saveMembers(members);
+                saveSquads();
+                saveMembers();
             }
-            prefs.putInt(ROUND_INDEX, roundIndex);
+            m_prefs.putInt(ROUND_INDEX, m_roundIndex);
         }
     }
+        
+    public Dispatch()
+    {
+        m_prefs = Preferences.userNodeForPackage(Dispatch.class);
+        m_roundIndex = m_prefs.getInt(ROUND_INDEX, -1);        
+        
+        // Load squads and members from configuration files
+        m_date    = loadDate();
+        m_squads  = loadSquads();
+        m_members = loadMembers();
+    }
+
+    // Variables
+    private static final String ROUND_INDEX = "round_index";
+    private final File CONF_FILE    = new File("./resources/conf.json");
+    private final File MEMBERS_FILE = new File("./resources/members.json");
+    private final File DATE_FILE = new File("./resources/scheduler.json");
+    private final Squad[]     m_squads;
+    private final Lieutnant[] m_members;
+    private final Date m_date;
+    private int m_roundIndex;
+    private Preferences m_prefs;
 }

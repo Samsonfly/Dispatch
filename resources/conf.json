@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+	"name": "ALPHA",
+	"leader" : {
+		"firstName": "",
+		"lastName" : ""
+	},
+	"members":[],
+	"history":[]
+  },
+  {
+    "id": 2,
+	"name": "BRAVO",
+	"leader" : {
+		"firstName": "",
+		"lastName" : ""
+	},
+	"members":[],
+	"history":[]
+  },
+  {
+    "id": 3,
+	"name": "CHARLIE",
+	"leader" : {
+		"firstName": "",
+		"lastName" : ""
+	},
+	"members":[],
+	"history":[]
+  },
+  {
+    "id": 4,
+	"name": "DELTA",
+	"leader" : {
+		"firstName": "",
+		"lastName" : ""
+	},
+	"members":[],
+	"history":[]
+  },
+  {
+    "id": 5,
+	"name": "ECHO",
+	"leader" : {
+		"firstName": "",
+		"lastName" : ""
+	},
+	"members":[],
+	"history":[]
+  }
+]

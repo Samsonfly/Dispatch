@@ -70,4 +70,9 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-post-jar"> 
+        <copy file="resources/conf.json" flatten="true" todir="${dist.dir}/resources"/> 
+        <copy file="resources/members.json" flatten="true" todir="${dist.dir}/resources"/> 
+        <copy file="resources/scheduler.json" flatten="true" todir="${dist.dir}/resources"/> 
+    </target>     
 </project>
